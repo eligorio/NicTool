@@ -11,5 +11,7 @@ CREATE TABLE nt_options (
 INSERT INTO `nt_options`
 VALUES (1,'db_version','2.27'),
        (2,'session_timeout','45'),
-       (3,'default_group','NicTool')
+       (3,'default_group','NicTool'),
+       (4,'auth_nictool','1'),
+       (5,'auth_ldap','0')
        ;

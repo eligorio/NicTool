@@ -33,7 +33,7 @@ my $dbh  = DBIx::Simple->connect( $dsn, $db_user, $db_pass )
 
 # NOTE: when making schema changes, update db_version in 12_nt_options.sql
 my @versions = qw/ 2.00 2.05 2.08 2.09 2.10 2.11 2.14 2.15 2.16 2.18 2.24
-                   2.27 2.28 2.29 2.30 /;
+                   2.27 2.28 2.29 2.30 2.32 /;
 
 foreach my $version ( @versions ) {
 # first, run a DB test query
@@ -109,6 +109,10 @@ sub _sql_2_32 {
     <<EO_SQL_2_32
 DROP TABLE IF EXISTS nt_nameserver_qlog;
 DROP TABLE IF EXISTS nt_nameserver_qlogfile;
+
+INSERT INTO nt_options
+VALUES (4,'auth_nictool','1'),
+       (5,'auth_ldap','0');
 
 UPDATE nt_options SET option_value='2.32' WHERE option_name='db_version';
 EO_SQL_2_32
