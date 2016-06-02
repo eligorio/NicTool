@@ -1,6 +1,13 @@
+# After append the commented lines below to the end of .git/config
+#[remote "upstream"]
+#	url = https://github.com/msimerson/NicTool.git
+#	fetch = +refs/heads/*:refs/remotes/upstream/*
+
 git fetch upstream
 git checkout master
 git merge upstream/master
 git add .
 git commit -a
+
 #git push origin master
+
