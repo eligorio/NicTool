@@ -239,6 +239,10 @@ foreach my $zone ( @zones ) {
             warn( "\t*** Failed searching for zone $zone: " . $resp->{error_desc} . " : " . $resp->{error_msg} . "\n" );
         }
 
+        my $mailaddrComPonto = $soa->rname;
+        print $mailaddrComPonto;
+        $mailaddrComPonto =~ s/@/./g;
+
         # Add it up!
         $resp = $nt->send_request(
             action          => "new_zone",
@@ -246,10 +250,10 @@ foreach my $zone ( @zones ) {
             nt_zone_id      => undef,
             zone            => $zone,
             nt_group_id     => $gid,
-            ttl             => ( $soa->ttl < 300 ? 300 : $soa->ttl ),
+            ttl             => ( $soa->ttl < 10 ? 10 : $soa->ttl ),
             serial          => $soa->serial,
             nameservers     => $servers,
-            mailaddr        => $soa->rname,
+            mailaddr        => $mailaddrComPonto,
             refresh         => $soa->refresh,
             retry           => $soa->retry,
             expire          => $soa->expire,
@@ -349,6 +353,42 @@ foreach my $zone ( @zones ) {
                     address             => $rr->ptrdname . ".",
                 );
             }
+	    # elsif( $rr->type eq "DS" ) {
+	    #    $resp = $nt->send_request(
+	    #        action              => "new_zone_record",
+	    #        nt_user_session     => $ntuser->{nt_user_session},
+	    #        nt_zone_id          => $zoneid,
+	    #        nt_zone_record_id   => undef,
+	    #        name                => $name,
+	    #        ttl                 => ( $rr->ttl < 300 ? 300 : $rr->ttl ),
+	    #        type                => $rr->type,
+	    #        address             => $rr->ptrdname . ".",
+	    #    );
+	    #}
+	    # elsif( $rr->type eq "TLSA" ) {
+	    #    $resp = $nt->send_request(
+	    #        action              => "new_zone_record",
+	    #        nt_user_session     => $ntuser->{nt_user_session},
+	    #        nt_zone_id          => $zoneid,
+	    #        nt_zone_record_id   => undef,
+	    #        name                => $name,
+	    #        ttl                 => ( $rr->ttl < 300 ? 300 : $rr->ttl ),
+	    #        type                => $rr->type,
+	    #        address             => $rr->ptrdname . ".",
+	    #    );
+	    #}
+	    # elsif( $rr->type eq "SRV" ) {
+	    #    $resp = $nt->send_request(
+	    #        action              => "new_zone_record",
+	    #        nt_user_session     => $ntuser->{nt_user_session},
+	    #        nt_zone_id          => $zoneid,
+	    #        nt_zone_record_id   => undef,
+	    #        name                => $name,
+	    #        ttl                 => ( $rr->ttl < 300 ? 300 : $rr->ttl ),
+	    #        type                => $rr->type,
+	    #        address             => $rr->ptrdname . ".",
+	    #    );
+	    #}
 
             if( !&checkResponse( $resp )) {
                 warn( "\t*** Failed to add record " . $rr->name . ": " . $resp->{error_desc} . " : " . $resp->{error_msg} . "\n" );
