@@ -20,6 +20,18 @@ sub new_zone_record {
         if (!defined $data->{priority}) { $self->error('priority', 'priority is required'); }
         if (!defined $data->{other}) { $self->error('other', 'port is required'); }
     };
+    if ($data->{type} eq 'DS') {
+        if (!defined $data->{digtype}) { $self->error('digtype', 'digest type number is required'); }
+        if (!defined $data->{digest}) { $self->error('digest', 'digest is required'); }
+        if (!defined $data->{keytag}) { $self->error('keytag', 'keytag is required'); }
+        if (!defined $data->{algorithm}) { $self->error('algorithm', 'algorithm is required'); }
+    };
+    if ($data->{type} eq 'TLSA') {
+        if (!defined $data->{usage}) { $self->error('usage', 'usage is required'); }
+        if (!defined $data->{selector}) { $self->error('selector', 'selector is required'); }
+        if (!defined $data->{matchingtype}) { $self->error('matchingtype', 'matchingtype is required'); }
+        if (!defined $data->{cert}) { $self->error('cert', 'cert is required'); }
+    };
 
     return $self->throw_sanity_error if $self->{errors};
     return $self->SUPER::new_zone_record($data);
@@ -80,6 +92,8 @@ sub new_or_edit_basic_verify {
     $self->_valid_ptr  ( @args ) if $data->{type} eq 'PTR';
     $self->_valid_srv  ( @args ) if $data->{type} eq 'SRV';
     $self->_valid_mx   ( @args ) if $data->{type} eq 'MX';
+    $self->_valid_ds   ( @args ) if $data->{type} eq 'DS';
+    $self->_valid_tlsa   ( @args ) if $data->{type} eq 'TLSA';
 
     $self->_name_collision($data, $z);
     $self->_valid_ttl( @args );

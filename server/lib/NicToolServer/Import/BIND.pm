@@ -322,8 +322,47 @@ sub zr_ipseckey {
     );
 };
 
+sub zr_ds {
+	my ($self, $rr, $zone) = @_;
+	$rr or die;
 
-sub zr_ds { };
+	print "DS : " . $rr->name . "\t" . $rr->keytag. "\t" . $rr->algorithm. "\t" . $rr->digtype. "\t" . $rr->digest . "\n";
+	my ($zone_id, $host) = $self->get_zone_id( $rr->name, $zone );
+
+	$self->nt_create_record(
+		zone_id => $zone_id,
+		type    => 'DS',
+		name    => $host,
+		ttl     => $rr->ttl,
+		keytag  => $rr->keytag,
+		algorithm => $rr->algorithm,
+		digtype => $rr->digtype,
+		digest  => $rr->digest,
+		addrees => $rr->keytag. "\t" . $rr->algorithm. "\t" . $rr->digtype. "\t" . $rr->digest,
+	);
+
+};
+sub zr_tlsa {
+	my ($self, $rr, $zone) = @_;
+	$rr or die;
+
+	print "TLSA : " . $rr->name . "\t" . $rr->usage . "\t" .$rr->selector. "\t" . $rr->matchingtype. "\t" . $rr->certificate . "\n";
+	my ($zone_id, $host) = $self->get_zone_id( $rr->name, $zone );
+
+	$self->nt_create_record(
+		zone_id => $zone_id,
+		type    => 'TLSA',
+		usage => $rr->usage,
+		selector => $rr->selector,
+		matchingtype => $rr->matchingtype,
+		cert => $rr->cert,
+		name => $host,
+		ttl     => $rr->ttl,
+		address     =>  "( " .$rr->usage . "\t" .$rr->selector. "\t" . $rr->matchingtype. "\t" . $rr->certificate . " )",
+	);
+
+
+};
 sub zr_dnskey { };
 sub zr_nsec { };
 sub zr_nsec3 { };

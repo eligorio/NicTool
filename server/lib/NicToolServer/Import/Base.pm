@@ -136,7 +136,16 @@ sub nt_create_record {
             'description' => { type => SCALAR, optional => 1, },
             'location'    => { type => SCALAR, optional => 1, },
             'timestamp'   => { type => SCALAR, optional => 1, },
-        }
+	    'usage'       => { type => SCALAR, optional => 1, },
+	    'selector'    => { type => SCALAR, optional => 1, },
+	    'matchingtype'   => { type => SCALAR, optional => 1, },
+	    'cert'        => { type => SCALAR, optional => 1, },
+	    'keytag'      => { type => SCALAR, optional => 1, },
+	    'digest'      => { type => SCALAR, optional => 1, },
+	    'algorithm'   => { type => SCALAR, optional => 1, },
+	    'digtype'     => { type => SCALAR, optional => 1, },
+
+    }
     );
 
     my %request = (
@@ -148,7 +157,7 @@ sub nt_create_record {
 
     $self->record_exists( \%request ) and return;
 
-    foreach ( qw/ ttl weight priority other description location timestamp / ) {
+    foreach ( qw/ ttl weight priority other description location timestamp usage selector matchingtype cert keytag digest algorithm digtype / ) {
         next if ! defined $p{$_};
         $request{$_} = $p{$_};
     };
