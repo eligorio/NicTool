@@ -3,6 +3,7 @@ package NicToolServer::Import::Base;
 
 use strict;
 use warnings;
+use Net::IP;
 
 use lib 'lib';
 
@@ -147,7 +148,9 @@ sub nt_create_record {
 
     }
     );
-
+    if (Net::IP::ip_is_ipv6($p{address})){
+	    $p{address} = Net::IP::ip_expand_address($p{address},6);
+    };
     my %request = (
         nt_zone_id => $p{zone_id},
         name       => lc $p{name},
