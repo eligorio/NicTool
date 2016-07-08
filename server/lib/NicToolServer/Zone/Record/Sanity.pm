@@ -118,9 +118,16 @@ sub _valid_ttl {
 
 sub _duplicate_record {
     my ( $self, $data, $zone_text, $collisions ) = @_;
+    my $addr;
+
+    if (Net::IP::ip_is_ipv6($data->{address})){
+	    $addr = Net::IP::ip_expand_address($data->{address},6);
+    } else {
+	    $addr = $data->{address};
+    }
 
     my @matches = grep { $_->{type} eq $data->{type} }
-                  grep { $_->{address} eq $data->{address} }
+                  grep { $_->{address} eq $addr }
                   @$collisions;
 
     if (scalar @matches) {
@@ -179,6 +186,17 @@ sub _name_collision {
 
     # permit glue & DNSSEC records for this zone to exist in parent zones
     return if $data->{type} =~ /^(NS|DS)$/;
+
+    my $sql = "SELECT COUNT(*) as countns
+    FROM nt_zone_record r
+    LEFT JOIN resource_record_type t ON r.type_id=t.id
+    WHERE r.deleted=0
+	    AND t.id=2
+	    AND r.nt_zone_id =".  $z->{'nt_zone_id'} ."
+	    AND r.address LIKE \'$data->{name}.$zone_text.\'";
+    my $countns = $self->exec_query( $sql);
+    warn "$countns->[0]->{countns} NS as  $data->{name} \n $sql";
+    return if ( $countns->[0]->{countns} > 0 &&  $data->{type} =~ /^(A|AAAA)$/);
 
     # name is something like blah, or blah.blah
     # if zone is zone.com., it's the origin, which should have been checked
@@ -406,6 +424,14 @@ sub _valid_aaaa {
         $self->error( 'address',
             'Address for A records must be a valid IP address.'
         );
+}
+
+sub _valid_tlsa {
+	my ( $self, $data, $zone_text, $collisions ) = @_;
+}
+sub _valid_ds {
+	my ( $self, $data, $zone_text, $collisions ) = @_;
+
 }
 
 sub _valid_mx {
