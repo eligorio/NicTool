@@ -30,7 +30,7 @@ sub new_zone_record {
     # build insert query
     my $col_string = 'nt_zone_id';
     my @values = $data->{nt_zone_id};
-    foreach my $c ( qw/name ttl description type address weight priority other location timestamp /) {
+    foreach my $c ( qw/name ttl description type address weight priority other location timestamp usage selector matchingtype cert keytag digest algorithm digtype /) {
         next if ! defined $data->{$c};
         next if '' eq $data->{$c};
         if ( $c eq 'type' ) {
@@ -137,7 +137,7 @@ sub edit_zone_record {
     my $sql = "UPDATE nt_zone_record SET ";
     my @values;
     my @columns = qw/ name ttl description type address weight priority other
-                      location timestamp deleted /;
+                      location timestamp deleted usage selector matchingtype cert keytag digest algorithm digtype /;
 
     my $i = 0;
     foreach my $c ( @columns ) {
@@ -225,7 +225,7 @@ sub log_zone_record {
     my $col_string = 'nt_zone_id';
     my @values = $data->{nt_zone_id};
     foreach my $c ( qw/ nt_zone_record_id nt_user_id action timestamp name
-        ttl description type_id address weight priority other location / )
+        ttl description type_id address weight priority other location usage selector matchingtype cert keytag digest algorithm digtype / )
     {
         next if ! defined $data->{$c};
         next if '' eq $data->{$c};
