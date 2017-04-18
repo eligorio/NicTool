@@ -140,7 +140,7 @@ sub edit_zone_record {
         $sql .= "," if $i > 0;
         if ( $c eq 'type' ) {
             $sql .= "type_id = ?";
-            push @values, $self->get_record_type( { type=>$data->{$c} } );
+            push @values, $self->get_record_type({ type=> $data->{$c} });
         }
         else {
             $sql .= "$c = ?";
@@ -209,11 +209,23 @@ sub log_zone_record {
     $data->{timestamp}  = time();
 
     # get zone_id if not provided.
+    my $db_data;
     if ( !$data->{nt_zone_id} ) {
-        my $db_data = $self->find_zone_record( $data->{nt_zone_record_id} );
+        $db_data = $self->find_zone_record( $data->{nt_zone_record_id} );
         $data->{nt_zone_id} = $db_data->{nt_zone_id};
     }
 
+    if ( !$data->{type_id} ) {
+        if ($data->{type}) {
+            $data->{type_id} = $self->get_record_type( { type => $data->{type} } );
+        }
+        else {
+            if (!$db_data) {
+                $db_data = $self->find_zone_record( $data->{nt_zone_record_id} );
+            }
+            $data->{type_id} = $db_data->{type_id};
+        }
+    }
 
     my $col_string = 'nt_zone_id';
     my @values = $data->{nt_zone_id};
@@ -222,6 +234,7 @@ sub log_zone_record {
     {
         next if ! defined $data->{$c};
         next if '' eq $data->{$c};
+
         $col_string .= ", $c";
         push @values, $data->{$c};
     };
@@ -264,7 +277,7 @@ sub log_zone_record {
 
     my @g_columns = qw/ nt_user_id timestamp action object object_id log_entry_id title description /;
     $col_string = join(',', @g_columns);
-    @values = map( $data->{$_}, @g_columns );
+    @values = map { $data->{$_} } @g_columns;
     $self->exec_query( "INSERT INTO nt_user_global_log($col_string) VALUES(??)", \@values );
 }
 
@@ -278,6 +291,7 @@ sub get_zone_record {
       LEFT JOIN resource_record_type t ON r.type_id=t.id
         WHERE r.nt_zone_record_id=?
          ORDER BY r.$data->{sortby}";
+
     my $zrs = $self->exec_query( $sql, $data->{nt_zone_record_id} )
         or return {
         error_code => 600,
@@ -293,7 +307,7 @@ sub get_zone_record {
     my $del = $self->get_param_meta( 'nt_zone_record_id', 'delegate' )
         or return \%rv;
 
-    # this info comes from NicToolServer.pm when it checks for access perms to the objects
+    # this comes from NicToolServer.pm when it checks for access perms to the objects
     my %mapping = (
         delegated_by_id   => 'delegated_by_id',
         delegated_by_name => 'delegated_by_name',
@@ -371,7 +385,7 @@ sub get_record_type {
 };
 
 sub _bump_and_update_serial {
-    my ( $self, $nt_zone_id, $z_serial );
+    my ( $self, $nt_zone_id, $z_serial ) = @_;
     $self->exec_query( "UPDATE nt_zone SET serial = ? WHERE nt_zone_id = ?",
         [ $self->bump_serial( $nt_zone_id, $z_serial ), $nt_zone_id ] );
 }
@@ -380,8 +394,48 @@ sub _bump_and_update_serial {
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+NicToolServer::Zone::Record - manage DNS zone records
+
+=head1 VERSION
+
+version 2.34
+
 =head1 SYNOPSIS
 
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Matt Simerson <msimerson@cpan.org>
+
+=item *
+
+Damon Edwards
+
+=item *
+
+Abe Shelton
+
+=item *
+
+Greg Schueler
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is Copyright (c) 2017 by The Network People, Inc. This software is Copyright (c) 2001 by Damon Edwards, Abe Shelton, Greg Schueler.
+
+This is free software, licensed under:
+
+  The GNU Affero General Public License, Version 3, November 2007
 
 =cut
-
